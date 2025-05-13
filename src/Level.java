@@ -10,6 +10,8 @@ public class Level {
     private Color backgroundColor = new Color(25, 25, 50);
     private Color platformColor = Color.GREEN;
     private boolean levelCompleted = false;
+    private static final int WID = VaultVault.WIDTH;
+    private static final int HEI = VaultVault.HEIGHT;
 
     public Level() {
         platforms = new ArrayList<>();
@@ -21,6 +23,10 @@ public class Level {
     }
 
     public void addPlatform(Platform platform) {
+        // Set the platform color if not already set
+        if (platform.getColor() == null) {
+            platform.setColor(platformColor);
+        }
         platforms.add(platform);
     }
 
@@ -41,8 +47,6 @@ public class Level {
         hazards.clear();
         levelCompleted = false;
 
-        // Ground platform for all levels
-        addPlatform(new Platform(0, 500, 800, 50));
 
         switch (levelNumber) {
             case 1:
@@ -62,18 +66,19 @@ public class Level {
                 break;
         }
 
-        // Add goal - now using the Goal class instead of a yellow platform
-        goal = new Goal(750, 430, 40, 70);
     }
 
     private void createLevel1() {
         // Basic level with a mix of platforms
-        addPlatform(new Platform(200, 400, 100, 20));
-        addPlatform(new MovingPlatform(350, 350, 100, 20, 350, 450, 1.0f, true));
-        addPlatform(new Platform(500, 300, 100, 20));
+        addPlatform(new Platform(200, HEI-120, 100, 20));
+        addPlatform(new MovingPlatform(350, HEI-230, 100, 20, 350, 450, 1.0f, true));
+        addPlatform(new Platform(500, HEI-340, 100, 20));
 
-        // Add a basic hazard
-        addHazard(new Hazard(300, 480, 80, 20, Hazard.HazardType.SPIKES));
+        addHazard(new Hazard(500, HEI-360, 40, 20, Hazard.HazardType.SPIKES));
+
+        // grd
+        addPlatform(new Platform(0, HEI-50, WID, 50));
+        goal = new Goal(WID-50, HEI-120, 40, 70);
 
         platformColor = new Color(0, 200, 0);
         backgroundColor = new Color(25, 25, 50);
@@ -81,18 +86,23 @@ public class Level {
 
     private void createLevel2() {
         // Medium difficulty with disappearing platform
-        addPlatform(new Platform(150, 450, 80, 20));
-        addPlatform(new Platform(280, 400, 80, 20));
-        addPlatform(new DisappearingPlatform(400, 350, 80, 20, 120));
-        addPlatform(new Platform(540, 300, 80, 20));
-        addPlatform(new MovingPlatform(650, 250, 80, 20, 550, 650, 1.5f, true));
-        addPlatform(new Platform(500, 200, 80, 20));
-        addPlatform(new Platform(350, 150, 80, 20));
+        addPlatform(new Platform(150, HEI-50, 80, 20));
+        addPlatform(new Platform(280, HEI-100, 80, 20));
+        addPlatform(new DisappearingPlatform(400, HEI-150, 80, 20, 120));
+        addPlatform(new Platform(540, HEI-200, 80, 20));
+        addPlatform(new MovingPlatform(650, HEI-250, 80, 20, 550, 650, 1.5f, true));
+        addPlatform(new Platform(500, HEI-300, 80, 20));
+        addPlatform(new Platform(350, HEI-350, 80, 20));
 
         // Add hazards
-        addHazard(new Hazard(250, 480, 100, 20, Hazard.HazardType.SPIKES));
-        addHazard(new Hazard(450, 480, 80, 20, Hazard.HazardType.SPIKES));
-        addHazard(new Hazard(620, 480, 70, 20, Hazard.HazardType.LAVA));
+        addHazard(new Hazard(250, HEI-120, 100, 20, Hazard.HazardType.SPIKES));
+        addHazard(new Hazard(450, HEI-120, 80, 20, Hazard.HazardType.SPIKES));
+        addHazard(new Hazard(620, HEI-120, 70, 20, Hazard.HazardType.LAVA));
+
+        // grd
+        addPlatform(new Platform(0, HEI-50, WID/4, 50));
+        addPlatform(new Platform(WID/4 + 150, HEI-50, 3*WID/4 - 150, 50));
+        setGoal(new Goal(150, 150, 40, 70));
 
         platformColor = new Color(0, 150, 200);
         backgroundColor = new Color(40, 40, 70);
@@ -244,18 +254,25 @@ public class Level {
         for (Hazard hazard : hazards) {
             if (player.getBounds().intersects(hazard.getBounds())) {
                 player.setX(50);
-                player.setY(300);
+                player.setY(HEI-200);
                 player.setVelocityX(0);
                 player.setVelocityY(0);
                 break;
             }
+        }
+
+        if (player.getY() > HEI) {
+            player.setX(50);
+            player.setY(HEI-200);
+            player.setVelocityX(0);
+            player.setVelocityY(0);
         }
     }
 
     public void render(Graphics g) {
         // Draw background
         g.setColor(backgroundColor);
-        g.fillRect(0, 0, 800, 600);
+        g.fillRect(0, 0, WID, HEI);
 
         // Draw platforms
         for (Platform platform : platforms) {

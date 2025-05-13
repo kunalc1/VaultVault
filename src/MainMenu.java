@@ -9,6 +9,8 @@ public class MainMenu {
     private int selectedLevel = 0;
     private final Font titleFont = new Font("Arial", Font.BOLD, 48);
     private final Font menuFont = new Font("Arial", Font.BOLD, 24);
+    private static final int WID = VaultVault.WIDTH;
+    private static final int HEI = VaultVault.HEIGHT;
     
     public MainMenu(VaultVault game) {
         this.game = game;
@@ -28,13 +30,16 @@ public class MainMenu {
                 selectedMenuItem = Math.max(0, selectedMenuItem - 1);
                 break;
             case KeyEvent.VK_DOWN:
-                selectedMenuItem = Math.min(1, selectedMenuItem + 1);
+                selectedMenuItem = Math.min(2, selectedMenuItem + 1); // Now 3 options (0, 1, 2)
                 break;
             case KeyEvent.VK_ENTER:
                 if (selectedMenuItem == 0) {
                     // Start Game
                     menuState = MenuState.LEVEL_SELECT;
                 } else if (selectedMenuItem == 1) {
+                    // Toggle Debug Mode
+                    game.setDebugMode(!game.isDebugMode());
+                } else if (selectedMenuItem == 2) {
                     // Exit Game
                     System.exit(0);
                 }
@@ -71,7 +76,7 @@ public class MainMenu {
         // Draw title
         g.setFont(titleFont);
         g.setColor(Color.WHITE);
-        drawCenteredString(g, "VAULT VAULT", 400, 150);
+        drawCenteredString(g, "VAULT VAULT", WID/2, 150);
         
         // Draw menu items
         g.setFont(menuFont);
@@ -79,67 +84,79 @@ public class MainMenu {
         // Play Game option
         if (selectedMenuItem == 0) {
             g.setColor(Color.YELLOW);
-            g.fillRect(325, 250, 150, 40);
+            g.fillRect(WID/2 - 75, 250, 150, 40);
             g.setColor(Color.BLACK);
         } else {
             g.setColor(Color.WHITE);
         }
-        drawCenteredString(g, "Play Game", 400, 280);
+        drawCenteredString(g, "Play Game", WID/2, 280);
         
-        // Exit option
+        // Debug Mode option
         if (selectedMenuItem == 1) {
             g.setColor(Color.YELLOW);
-            g.fillRect(325, 310, 150, 40);
+            g.fillRect(WID/2 - 125, 310, 250, 40);
             g.setColor(Color.BLACK);
         } else {
             g.setColor(Color.WHITE);
         }
-        drawCenteredString(g, "Exit", 400, 340);
+        // Show current debug mode status
+        String debugStatus = game.isDebugMode() ? "ON" : "OFF";
+        drawCenteredString(g, "Debug Mode: " + debugStatus, WID/2, 340);
+        
+        // Exit option
+        if (selectedMenuItem == 2) {
+            g.setColor(Color.YELLOW);
+            g.fillRect(WID/2-75, 370, 150, 40);
+            g.setColor(Color.BLACK);
+        } else {
+            g.setColor(Color.WHITE);
+        }
+        drawCenteredString(g, "Exit", WID/2, 400);
         
         // Instructions
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.PLAIN, 16));
-        drawCenteredString(g, "Use UP/DOWN arrows to navigate, ENTER to select", 400, 500);
+        drawCenteredString(g, "Use UP/DOWN arrows to navigate, ENTER to select", WID/2, HEI-75);
     }
     
     private void renderLevelSelect(Graphics g) {
         g.setFont(new Font("Arial", Font.BOLD, 36));
         g.setColor(Color.WHITE);
-        drawCenteredString(g, "SELECT LEVEL", 400, 180);
+        drawCenteredString(g, "SELECT LEVEL", WID/2, 180);
         
         g.setFont(menuFont);
         
         // Draw level selection
         g.setColor(Color.WHITE);
-        g.fillRect(350, 250, 100, 60);
+        g.fillRect(WID/2-50, 250, 100, 60);
         
         g.setColor(Color.BLACK);
-        drawCenteredString(g, "Level " + (selectedLevel + 1), 400, 285);
+        drawCenteredString(g, "Level " + (selectedLevel + 1), WID/2, 285);
         
         // Show completion indicator if level is completed
         if (game.isLevelCompleted(selectedLevel)) {
             g.setColor(Color.GREEN);
-            drawCenteredString(g, "✓", 435, 285); // Checkmark to indicate completion
+            drawCenteredString(g, "✓", WID/2+35, 285); // Checkmark to indicate completion
         }
         
         // Draw arrows
         g.setColor(Color.YELLOW);
-        g.fillRect(310, 270, 20, 20);
-        g.fillRect(470, 270, 20, 20);
+        g.fillRect(WID/2-90, 270, 20, 20);
+        g.fillRect(WID/2+70, 270, 20, 20);
         
         g.setColor(Color.BLACK);
-        g.drawString("<", 312, 286);
-        g.drawString(">", 472, 286);
+        g.drawString("<", WID/2-88, 286);
+        g.drawString(">", WID/2+72, 286);
         
         // Display completion progress
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.PLAIN, 16));
         drawCenteredString(g, 
                 "Completed: " + game.getCompletedLevelCount() + "/" + game.getLevelCount(), 
-                400, 450);
+                WID/2, 450);
         
         // Instructions
-        drawCenteredString(g, "Use LEFT/RIGHT to change level, ENTER to start, ESC to go back", 400, 500);
+        drawCenteredString(g, "Use LEFT/RIGHT to change level, ENTER to start, ESC to go back", WID/2, 500);
     }
     
     private void drawCenteredString(Graphics g, String text, int x, int y) {

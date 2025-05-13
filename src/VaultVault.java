@@ -2,12 +2,14 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
 public class VaultVault extends JPanel implements Runnable {
-    private static final int WIDTH = 800;
-    private static final int HEIGHT = 600;
+    public static final int WIDTH = 1024; // 800px
+    public static final int HEIGHT = 768; // 600px
     private static final int FPS = 60;
 
     // Game states
@@ -36,6 +38,9 @@ public class VaultVault extends JPanel implements Runnable {
     private boolean levelCompletionAnimation = false;
     private int animationTicks = 0;
     private final int MAX_ANIMATION_TICKS = 60;
+    
+    // Debug mode flag
+    private boolean debugMode = true;
 
     public VaultVault() {
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
@@ -73,6 +78,31 @@ public class VaultVault extends JPanel implements Runnable {
                 }
             }
         });
+        
+        // Add mouse listener for debug platform creation
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (debugMode && currentState == GameState.PLAYING) {
+                    int x = e.getX();
+                    int y = e.getY();
+                    createPlatformAtPosition(x, y);
+                    System.out.println("Created platform at: x=" + x + ", y=" + y);
+                }
+            }
+        });
+    }
+    
+    // Method to create a platform at click position
+    private void createPlatformAtPosition(int x, int y) {
+        if (currentLevelIndex >= 0 && currentLevelIndex < levels.size()) {
+            Level currentLevel = levels.get(currentLevelIndex);
+            // Create a platform centered on the click point
+            int platformWidth = 100;
+            int platformHeight = 20;
+            Platform platform = new Platform(x - platformWidth/2, y - platformHeight/2, platformWidth, platformHeight);
+            currentLevel.addPlatform(platform);
+        }
     }
 
     private void handlePlayingKeyPressed(KeyEvent e) {
@@ -277,6 +307,13 @@ public class VaultVault extends JPanel implements Runnable {
                 g.drawString("Time: " + timeString, 20, 55);
             }
             
+            // Display debug mode indicator if enabled
+            if (debugMode) {
+                g.setColor(Color.ORANGE);
+                g.drawString("DEBUG MODE - Click to create platforms", 20, 80);
+            }
+            
+            g.setColor(Color.WHITE);
             g.drawString("ESC - Menu", WIDTH - 100, 30);
 
             // Draw level completion animation if active
@@ -332,6 +369,15 @@ public class VaultVault extends JPanel implements Runnable {
             if (completed) count++;
         }
         return count;
+    }
+
+    // Getter and setter for debug mode
+    public boolean isDebugMode() {
+        return debugMode;
+    }
+    
+    public void setDebugMode(boolean debugMode) {
+        this.debugMode = debugMode;
     }
 
     public static void main(String[] args) {
