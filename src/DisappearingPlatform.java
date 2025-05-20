@@ -4,6 +4,7 @@ public class DisappearingPlatform extends Platform {
     private int timer;
     private int visibilityDuration;
     private boolean visible = true;
+    private boolean disappearedOnce = false;
 
     public DisappearingPlatform(int x, int y, int width, int height, int visibilityDuration) {
         super(x, y, width, height);
@@ -13,21 +14,30 @@ public class DisappearingPlatform extends Platform {
 
     @Override
     public void update() {
-        // If platform is invisible, count time until it should reappear
-        if (!visible) {
+        // Once disappeared, stay visible forever after reappearing
+        if (!visible && !disappearedOnce) {
             timer++;
             if (timer >= visibilityDuration) {
                 visible = true;
                 timer = 0;
+                disappearedOnce = true;
             }
         }
+        // If disappearedOnce is true, platform stays visible permanently
     }
 
     public void triggerDisappear() {
-        if (visible) {
+        if (visible && !disappearedOnce) {
             visible = false;
             timer = 0;
         }
+    }
+
+    // Reset platform to its initial disappearing state
+    public void reset() {
+        visible = true;
+        disappearedOnce = false;
+        timer = 0;
     }
 
     @Override

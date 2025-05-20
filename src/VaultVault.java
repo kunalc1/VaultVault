@@ -38,7 +38,12 @@ public class VaultVault extends JPanel implements Runnable {
     private boolean levelCompletionAnimation = false;
     private int animationTicks = 0;
     private final int MAX_ANIMATION_TICKS = 60;
-    
+    // Animation for level change
+    private boolean levelChangeAnimation = false;
+    private int levelChangeTicks = 0;
+    private final int MAX_LEVEL_CHANGE_TICKS = 45;
+    private int nextLevelToStart = -1;
+
     // Debug mode flag
     private boolean debugMode = true;
 
@@ -53,8 +58,8 @@ public class VaultVault extends JPanel implements Runnable {
         // Initialize levels
         levels = new ArrayList<>();
         createLevels();
-        
-        // Initialize completed levels array
+
+        // Initialize completed levels array (after all levels are added)
         completedLevels = new boolean[levels.size()];
 
         // Create main menu
@@ -78,7 +83,7 @@ public class VaultVault extends JPanel implements Runnable {
                 }
             }
         });
-        
+
         // Add mouse listener for debug platform creation
         addMouseListener(new MouseAdapter() {
             @Override
@@ -92,7 +97,7 @@ public class VaultVault extends JPanel implements Runnable {
             }
         });
     }
-    
+
     // Method to create a platform at click position
     private void createPlatformAtPosition(int x, int y) {
         if (currentLevelIndex >= 0 && currentLevelIndex < levels.size()) {
@@ -135,23 +140,55 @@ public class VaultVault extends JPanel implements Runnable {
     }
 
     private void createLevels() {
-        // Level 1 - Basic platforms
+        // Level 0 - Tutorial
+        Level tutorial = new Level();
+        tutorial.addPlayer(player);
+        tutorial.createLevel(0);
+        levels.add(tutorial);
+
+        // Level 1 - Easy
         Level level1 = new Level();
         level1.addPlayer(player);
         level1.createLevel(1);
         levels.add(level1);
 
-        // Level 2 - More complex platforms
+        // Level 2 - Medium
         Level level2 = new Level();
         level2.addPlayer(player);
         level2.createLevel(2);
         levels.add(level2);
 
-        // Level 3 - Advanced layout
+        // Level 3 - Hard
         Level level3 = new Level();
         level3.addPlayer(player);
         level3.createLevel(3);
         levels.add(level3);
+
+        // Level 4 - Very Hard
+        Level level4 = new Level();
+        level4.addPlayer(player);
+        level4.createLevel(4);
+        levels.add(level4);
+
+        // Level 5 - Insane
+        Level level5 = new Level();
+        level5.addPlayer(player);
+        level5.createLevel(5);
+        levels.add(level5);
+    }
+
+    // Add these methods to support MainMenu and level logic
+
+    public void setDebugMode(boolean debugMode) {
+        this.debugMode = debugMode;
+    }
+
+    public boolean isDebugMode() {
+        return debugMode;
+    }
+
+    public int getLevelCount() {
+        return levels.size();
     }
 
     public void startGame(int levelIndex) {
@@ -166,15 +203,15 @@ public class VaultVault extends JPanel implements Runnable {
         player.setVelocityX(0);
         player.setVelocityY(0);
 
-        // Reset the current level (don't auto-complete)
+        // Reset the current level
         Level currentLevel = levels.get(currentLevelIndex);
-        currentLevel.createLevel(currentLevelIndex + 1); // Recreate level from scratch
+        currentLevel.createLevel(currentLevelIndex);
         currentLevel.addPlayer(player);
 
         // Reset level completion animation
         levelCompletionAnimation = false;
         animationTicks = 0;
-        
+
         // Reset and start the timer
         levelStartTime = System.currentTimeMillis();
         timerRunning = true;
@@ -182,47 +219,44 @@ public class VaultVault extends JPanel implements Runnable {
         setGameState(GameState.PLAYING);
     }
 
-    public void setGameState(GameState state) {
-        this.currentState = state;
+    public boolean isLevelCompleted(int idx) {
+        if (idx >= 0 && idx < completedLevels.length) {
+            return completedLevels[idx];
+        }
+        return false;
     }
 
-    public void start() {
-        if (gameThread == null || !running) {
-            running = true;
-            gameThread = new Thread(this);
-            gameThread.start();
+    public int getCompletedLevelCount() {
+        int count = 0;
+        for (boolean b : completedLevels) {
+            if (b) count++;
         }
+        return count;
     }
 
-    public void stop() {
-        running = false;
-        try {
-            gameThread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
+    private boolean nextLevelPending = false;
 
     @Override
     public void run() {
+        running = true;
         long lastTime = System.nanoTime();
-        double nsPerUpdate = 1000000000.0 / FPS;
+        double nsPerTick = 1000000000D / FPS;
         double delta = 0;
 
         while (running) {
             long now = System.nanoTime();
-            delta += (now - lastTime) / nsPerUpdate;
+            delta += (now - lastTime) / nsPerTick;
             lastTime = now;
 
             while (delta >= 1) {
                 update();
-                delta--;
+                delta -= 1;
             }
 
             repaint();
 
             try {
-                Thread.sleep(1);
+                Thread.sleep(2);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -233,55 +267,49 @@ public class VaultVault extends JPanel implements Runnable {
         if (currentState == GameState.PLAYING) {
             Level currentLevel = levels.get(currentLevelIndex);
             currentLevel.update();
-            
-            // Update timer if it's running
-            if (timerRunning) {
-                currentTime = System.currentTimeMillis();
-            }
 
-            // Check if level is completed by reaching the goal
-            if (currentLevel.isLevelCompleted() && !levelCompletionAnimation) {
+            // Check for level completion
+            if (currentLevel.isCompleted() && !levelCompletionAnimation && !levelChangeAnimation) {
+                completedLevels[currentLevelIndex] = true;
                 levelCompletionAnimation = true;
                 animationTicks = 0;
-                timerRunning = false; // Stop the timer when level is completed
             }
 
             // Handle level completion animation
             if (levelCompletionAnimation) {
                 animationTicks++;
                 if (animationTicks >= MAX_ANIMATION_TICKS) {
-                    nextLevel();
+                    levelCompletionAnimation = false;
+                    // Start level change animation
+                    if (currentLevelIndex + 1 < levels.size()) {
+                        levelChangeAnimation = true;
+                        levelChangeTicks = 0;
+                        nextLevelToStart = currentLevelIndex + 1;
+                    } else {
+                        // If last level, return to menu after animation
+                        setGameState(GameState.MENU);
+                    }
+                }
+            } else if (levelChangeAnimation) {
+                levelChangeTicks++;
+                if (levelChangeTicks >= MAX_LEVEL_CHANGE_TICKS) {
+                    levelChangeAnimation = false;
+                    if (nextLevelToStart >= 0 && nextLevelToStart < levels.size()) {
+                        startGame(nextLevelToStart);
+                        nextLevelToStart = -1;
+                    }
+                }
+            } else {
+                // Only update timer if not in animation
+                if (timerRunning) {
+                    currentTime = System.currentTimeMillis();
                 }
             }
         }
     }
 
-    private void nextLevel() {
-        // Mark current level as completed
-        if (currentLevelIndex >= 0 && currentLevelIndex < completedLevels.length) {
-            completedLevels[currentLevelIndex] = true;
-        }
-        
-        currentLevelIndex++;
-        if (currentLevelIndex >= levels.size()) {
-            // Game completed, return to menu
-            currentLevelIndex = 0;
-            setGameState(GameState.MENU);
-        } else {
-            // Start next level
-            player.setX(50);
-            player.setY(300);
-            player.setVelocityX(0);
-            player.setVelocityY(0);
-            
-            // Reset and restart timer for next level
-            levelStartTime = System.currentTimeMillis();
-            timerRunning = true;
-        }
-
-        // Reset level completion animation
-        levelCompletionAnimation = false;
-        animationTicks = 0;
+    private void setGameState(GameState newState) {
+        currentState = newState;
     }
 
     @Override
@@ -289,106 +317,71 @@ public class VaultVault extends JPanel implements Runnable {
         super.paintComponent(g);
 
         if (currentState == GameState.PLAYING) {
-            levels.get(currentLevelIndex).render(g);
+            Level currentLevel = levels.get(currentLevelIndex);
+            currentLevel.render(g);
 
-            // Display level information
-            g.setColor(Color.WHITE);
-            g.setFont(new Font("Arial", Font.BOLD, 16));
-            g.drawString("Level " + (currentLevelIndex + 1), 20, 30);
-            
-            // Display timer in top left with milliseconds
-            if (timerRunning) {
-                long elapsedMillis = currentTime - levelStartTime;
-                int millis = (int)(elapsedMillis % 1000);
-                int seconds = (int)(elapsedMillis / 1000);
-                int minutes = seconds / 60;
-                seconds %= 60;
-                String timeString = String.format("%02d:%02d.%03d", minutes, seconds, millis);
-                g.drawString("Time: " + timeString, 20, 55);
+            // Draw timer
+            if (timerRunning && !levelCompletionAnimation && !levelChangeAnimation) {
+                long elapsedTime = (currentTime - levelStartTime) / 1000;
+                g.setColor(Color.WHITE);
+                g.drawString("Time: " + elapsedTime + "s", 10, 20);
             }
-            
-            // Display debug mode indicator if enabled
-            if (debugMode) {
-                g.setColor(Color.ORANGE);
-                g.drawString("DEBUG MODE - Click to create platforms", 20, 80);
-            }
-            
-            g.setColor(Color.WHITE);
-            g.drawString("ESC - Menu", WIDTH - 100, 30);
 
-            // Draw level completion animation if active
+            // Draw level completion animation
             if (levelCompletionAnimation) {
-                drawLevelCompletionAnimation(g);
+                Graphics2D g2d = (Graphics2D) g;
+                float alpha = Math.min(1f, animationTicks / (float)MAX_ANIMATION_TICKS);
+                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
+                g2d.setColor(new Color(0, 255, 255));
+                g2d.setFont(new Font("Segoe UI", Font.BOLD, 64));
+                String msg = "Level Complete!";
+                int msgWidth = g2d.getFontMetrics().stringWidth(msg);
+                g2d.drawString(msg, (WIDTH - msgWidth) / 2, HEIGHT / 2);
+                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
+            }
+
+            // Draw level change animation
+            if (levelChangeAnimation) {
+                Graphics2D g2d = (Graphics2D) g;
+                float alpha = 1f - (levelChangeTicks / (float)MAX_LEVEL_CHANGE_TICKS);
+                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
+                g2d.setColor(new Color(120, 0, 255));
+                g2d.fillRect(0, 0, WIDTH, HEIGHT);
+                g2d.setColor(Color.WHITE);
+                g2d.setFont(new Font("Segoe UI", Font.BOLD, 48));
+                String msg = "Get Ready!";
+                int msgWidth = g2d.getFontMetrics().stringWidth(msg);
+                g2d.drawString(msg, (WIDTH - msgWidth) / 2, HEIGHT / 2);
+                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
             }
         } else if (currentState == GameState.MENU) {
             mainMenu.render(g);
         }
     }
 
-    private void drawLevelCompletionAnimation(Graphics g) {
-        float alpha = Math.min(1.0f, (float)animationTicks / 30);
-        Color overlayColor = new Color(1.0f, 1.0f, 1.0f, alpha * 0.5f);
-
-        g.setColor(overlayColor);
-        g.fillRect(0, 0, WIDTH, HEIGHT);
-
-        g.setColor(new Color(255, 215, 0)); // Gold
-        g.setFont(new Font("Arial", Font.BOLD, 48));
-        FontMetrics metrics = g.getFontMetrics();
-        String message = "Level Complete!";
-        int x = (WIDTH - metrics.stringWidth(message)) / 2;
-        int y = HEIGHT / 2;
-
-        g.drawString(message, x, y);
-
-        // Display "Next Level" message
-        if (animationTicks > 20) {
-            g.setFont(new Font("Arial", Font.PLAIN, 24));
-            metrics = g.getFontMetrics();
-            message = "Preparing next level...";
-            x = (WIDTH - metrics.stringWidth(message)) / 2;
-            y = HEIGHT / 2 + 50;
-            g.drawString(message, x, y);
-        }
-    }
-
-    public int getLevelCount() {
-        return levels.size();
-    }
-
-    public boolean isLevelCompleted(int levelIndex) {
-        if (levelIndex >= 0 && levelIndex < completedLevels.length) {
-            return completedLevels[levelIndex];
-        }
-        return false;
-    }
-    
-    public int getCompletedLevelCount() {
-        int count = 0;
-        for (boolean completed : completedLevels) {
-            if (completed) count++;
-        }
-        return count;
-    }
-
-    // Getter and setter for debug mode
-    public boolean isDebugMode() {
-        return debugMode;
-    }
-    
-    public void setDebugMode(boolean debugMode) {
-        this.debugMode = debugMode;
-    }
-
     public static void main(String[] args) {
-        JFrame frame = new JFrame("Vault Vault");
+        JFrame frame = new JFrame("VaultVault");
         VaultVault game = new VaultVault();
         frame.add(game);
         frame.pack();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setResizable(false);
-        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+
         game.start();
+    }
+
+    public void start() {
+        running = true;
+        gameThread = new Thread(this);
+        gameThread.start();
+    }
+
+    public void stop() {
+        running = false;
+        try {
+            gameThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

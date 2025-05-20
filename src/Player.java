@@ -8,7 +8,7 @@ public class Player {
     private float velocityY = 0;
     private final float moveSpeed = 5.0f;
     private final float jumpStrength = -12.0f;
-    private final float gravity = 0.5f;
+    private final float gravity = 0.3f;
     private boolean onGround = false;
     private boolean movingLeft = false;
     private boolean movingRight = false;
@@ -23,7 +23,13 @@ public class Player {
         velocityX = 0;
         if (movingLeft) velocityX -= moveSpeed;
         if (movingRight) velocityX += moveSpeed;
-        
+
+        // Gravity is now applied in Level's collision logic, but ensure it's always applied if not on ground
+        // applyGravity();
+
+        // Cap falling speed for better control
+        if (velocityY > 20) velocityY = 20;
+
         // Apply velocity
         x += velocityX;
         y += velocityY;
@@ -85,4 +91,8 @@ public class Player {
     // Add getter and setter for velocityX
     public float getVelocityX() { return velocityX; }
     public void setVelocityX(float velocityX) { this.velocityX = velocityX; }
+
+    // Add these getters for movement direction
+    public boolean getMovingLeft() { return movingLeft; }
+    public boolean getMovingRight() { return movingRight; }
 }
