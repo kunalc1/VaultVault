@@ -175,6 +175,12 @@ public class VaultVault extends JPanel implements Runnable {
         level5.addPlayer(player);
         level5.createLevel(5);
         levels.add(level5);
+
+        // Level 6 - Donkey Kong
+        Level level6 = new Level();
+        level6.addPlayer(player);
+        level6.createLevel(6);
+        levels.add(level6);
     }
 
     // Add these methods to support MainMenu and level logic
@@ -331,6 +337,8 @@ public class VaultVault extends JPanel implements Runnable {
             if (levelCompletionAnimation) {
                 Graphics2D g2d = (Graphics2D) g;
                 float alpha = Math.min(1f, animationTicks / (float)MAX_ANIMATION_TICKS);
+
+                // Remove special animation for level 6, use default for all levels
                 g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
                 g2d.setColor(new Color(0, 255, 255));
                 g2d.setFont(new Font("Segoe UI", Font.BOLD, 64));

@@ -5,7 +5,7 @@ public class Hazard {
     private HazardType type;
     private Color color;
     private int animationTick = 0;
-    
+
     public enum HazardType {
         SPIKES,
         LAVA,
@@ -13,14 +13,14 @@ public class Hazard {
         SAW,
         ICE
     }
-    
+
     public Hazard(int x, int y, int width, int height, HazardType type) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         this.type = type;
-        
+
         switch (type) {
             case SPIKES:
                 this.color = Color.GRAY;
@@ -39,11 +39,11 @@ public class Hazard {
                 break;
         }
     }
-    
+
     public void update() {
         animationTick++;
     }
-    
+
     public void render(Graphics g) {
         switch (type) {
             case SPIKES:
@@ -63,7 +63,7 @@ public class Hazard {
                 break;
         }
     }
-    
+
     private void renderSpikes(Graphics g) {
         g.setColor(color);
         int spikeWidth = 10;
@@ -75,7 +75,7 @@ public class Hazard {
             g.fillPolygon(xPoints, yPoints, 3);
         }
     }
-    
+
     private void renderLava(Graphics g) {
         g.setColor(color);
         g.fillRect(x, y, width, height);
@@ -146,12 +146,31 @@ public class Hazard {
             g.fillRect(sparkleX, sparkleY, 2, 6);
         }
     }
-    
+
     public Rectangle getBounds() {
         return new Rectangle(x, y, width, height);
     }
-    
+
     public HazardType getType() {
         return type;
+    }
+
+    // Add helper for slide effect (to be called from Level)
+    public static void applyIceSlideEffect(Player player) {
+        // Simulate sliding: store momentum, keep sliding after releasing movement keys
+        float slideFriction = 0.97f; // Lower value = more slippery
+        // If player is pressing left/right, set velocityX as normal
+        if (player.getMovingLeft()) {
+            player.setVelocityX(-5.0f); // Use a reasonable slide speed
+        } else if (player.getMovingRight()) {
+            player.setVelocityX(5.0f);
+        } else {
+            // If not pressing, keep sliding and slowly reduce speed
+            player.setVelocityX(player.getVelocityX() * slideFriction);
+            // Stop if very slow
+            if (Math.abs(player.getVelocityX()) < 0.3f) {
+                player.setVelocityX(0);
+            }
+        }
     }
 }

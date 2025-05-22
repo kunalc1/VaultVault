@@ -206,7 +206,15 @@ public class MainMenu {
         g2d.setStroke(new BasicStroke(3f));
         g2d.drawRoundRect(boxX, boxY, boxW, boxH, 28, 28);
 
-        String levelName = (selectedLevel == 0) ? "Tutorial" : "Level " + selectedLevel;
+        // Updated level name display for new level 6
+        String levelName;
+        if (selectedLevel == 0) {
+            levelName = "Tutorial";
+        } else if (selectedLevel == 6) {
+            levelName = "Donkey Kong";
+        } else {
+            levelName = "Level " + selectedLevel;
+        }
         g.setFont(glowFont);
         drawNeonCenteredString(g2d, levelName, WID/2, boxY + boxH/2 + 12, new Color(0,255,255), new Color(120,0,255), 3);
 

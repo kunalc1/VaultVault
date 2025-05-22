@@ -52,3 +52,54 @@ public class DisappearingPlatform extends Platform {
         return visible;
     }
 }
+
+// Platform6: disappears visually and physically (player falls through when invisible), always reappears after timer
+class Platform6 extends Platform {
+    private int timer;
+    private int visibilityDuration;
+    private boolean visible = true;
+
+    public Platform6(int x, int y, int width, int height, int visibilityDuration) {
+        super(x, y, width, height);
+        this.visibilityDuration = visibilityDuration;
+        this.timer = 0;
+    }
+
+    public void update() {
+        if (!visible) {
+            timer++;
+            if (timer >= visibilityDuration) {
+                visible = true;
+                timer = 0;
+            }
+        }
+    }
+
+    public void triggerDisappear() {
+        if (visible) {
+            visible = false;
+            timer = 0;
+        }
+    }
+
+    public void render(Graphics g) {
+        if (visible) {
+            super.render(g);
+        }
+    }
+
+    public boolean isSolid() {
+        return visible;
+    }
+
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
+        if (visible) {
+            this.timer = 0;
+        }
+    }
+}
