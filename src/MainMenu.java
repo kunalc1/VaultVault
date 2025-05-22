@@ -14,8 +14,6 @@ public class MainMenu {
     private final Font glowFont = new Font("Segoe UI", Font.BOLD, 32);
     private static final int WID = VaultVault.WIDTH;
     private static final int HEI = VaultVault.HEIGHT;
-
-    // For animated background circles
     private static final int CIRCLE_COUNT = 12;
     private final float[] circleX = new float[CIRCLE_COUNT];
     private final float[] circleY = new float[CIRCLE_COUNT];
@@ -105,12 +103,9 @@ public class MainMenu {
     }
 
     private void renderBackground(Graphics2D g2d) {
-        // Blue to purple gradient
         GradientPaint gp = new GradientPaint(0, 0, new Color(40, 60, 120), WID, HEI, new Color(120, 40, 160));
         g2d.setPaint(gp);
         g2d.fillRect(0, 0, WID, HEI);
-
-        // Floating circles
         for (int i = 0; i < CIRCLE_COUNT; i++) {
             g2d.setColor(circleColors[i]);
             g2d.fill(new Ellipse2D.Float(circleX[i] - circleR[i], circleY[i] - circleR[i], circleR[i]*2, circleR[i]*2));
@@ -120,8 +115,7 @@ public class MainMenu {
     private void renderMainMenu(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
         renderBackground(g2d);
-
-        // Neon border around menu area
+        drawLogo(g2d, WID / 2, 70);
         int menuW = 420, menuH = 260, menuX = WID/2 - menuW/2, menuY = 200;
         g2d.setColor(new Color(0,255,255,80));
         g2d.setStroke(new BasicStroke(10f));
@@ -129,55 +123,37 @@ public class MainMenu {
         g2d.setColor(new Color(0,255,255,180));
         g2d.setStroke(new BasicStroke(3f));
         g2d.drawRoundRect(menuX-20, menuY-60, menuW+40, menuH+100, 40, 40);
-
-        // Draw title with neon glow
         g.setFont(titleFont);
         drawNeonCenteredString(g2d, "VAULT VAULT", WID/2, 140, new Color(0,255,255), new Color(120,0,255), 8);
-
-        // Menu item positions
         int[] yPositions = {260, 330, 400};
         String[] menuItems = {"Play Game", "Debug Mode: " + (game.isDebugMode() ? "ON" : "OFF"), "Exit"};
         int[] boxWidths = {220, 320, 180};
         int boxHeight = 50;
-
         for (int i = 0; i < menuItems.length; i++) {
             int boxX = WID/2 - boxWidths[i]/2;
             int boxY = yPositions[i] - boxHeight/2;
-
             if (selectedMenuItem == i) {
-                // Neon glow effect
                 g2d.setColor(new Color(0,255,255,80));
                 g2d.fillRoundRect(boxX-10, boxY-10, boxWidths[i]+20, boxHeight+20, 32, 32);
-
-                // Highlighted background
                 g2d.setColor(new Color(0, 180, 255, 180));
                 g2d.fillRoundRect(boxX, boxY, boxWidths[i], boxHeight, 24, 24);
-
-                // Outline
                 g2d.setStroke(new BasicStroke(3f));
                 g2d.setColor(new Color(0,255,255,220));
                 g2d.drawRoundRect(boxX, boxY, boxWidths[i], boxHeight, 24, 24);
-
-                // Neon text
                 g.setFont(glowFont);
                 drawNeonCenteredString(g2d, menuItems[i], WID/2, yPositions[i]+10, new Color(0,255,255), new Color(120,0,255), 4);
             } else {
                 g2d.setColor(new Color(255,255,255,30));
                 g2d.fillRoundRect(boxX, boxY, boxWidths[i], boxHeight, 24, 24);
-
                 g.setFont(menuFont);
                 drawCenteredString(g, menuItems[i], WID/2, yPositions[i]+8, new Color(220,220,255));
             }
         }
-
-        // Decorative corner triangles
         Polygon tri1 = new Polygon(new int[]{menuX-30, menuX-10, menuX-30}, new int[]{menuY-70, menuY-70, menuY-50}, 3);
         Polygon tri2 = new Polygon(new int[]{menuX+menuW+30, menuX+menuW+10, menuX+menuW+30}, new int[]{menuY+menuH+110, menuY+menuH+110, menuY+menuH+90}, 3);
         g2d.setColor(new Color(0,255,255,120));
         g2d.fillPolygon(tri1);
         g2d.fillPolygon(tri2);
-
-        // Instructions
         g.setColor(new Color(180, 220, 255));
         g.setFont(new Font("Segoe UI", Font.PLAIN, 18));
         drawCenteredString(g, "Use ↑/↓ to navigate, ENTER to select", WID/2, HEI-60, new Color(180,220,255));
@@ -186,27 +162,20 @@ public class MainMenu {
     private void renderLevelSelect(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
         renderBackground(g2d);
-
         int selW = 340, selH = 180, selX = WID/2 - selW/2, selY = 200;
         g2d.setColor(new Color(120,0,255,80));
         g2d.setStroke(new BasicStroke(8f));
         g2d.drawRoundRect(selX-20, selY-60, selW+40, selH+100, 40, 40);
-
         g.setFont(new Font("Segoe UI", Font.BOLD, 40));
         drawNeonCenteredString(g2d, "SELECT LEVEL", WID/2, 140, new Color(120,0,255), new Color(0,255,255), 6);
-
         g.setFont(menuFont);
-
         int boxW = 180, boxH = 80;
         int boxX = WID/2 - boxW/2, boxY = 240;
         g2d.setColor(new Color(120,0,255,40));
         g2d.fillRoundRect(boxX, boxY, boxW, boxH, 28, 28);
-
         g2d.setColor(new Color(0,255,255,180));
         g2d.setStroke(new BasicStroke(3f));
         g2d.drawRoundRect(boxX, boxY, boxW, boxH, 28, 28);
-
-        // Updated level name display for new level 6
         String levelName;
         if (selectedLevel == 0) {
             levelName = "Tutorial";
@@ -217,23 +186,19 @@ public class MainMenu {
         }
         g.setFont(glowFont);
         drawNeonCenteredString(g2d, levelName, WID/2, boxY + boxH/2 + 12, new Color(0,255,255), new Color(120,0,255), 3);
-
         if (game.isLevelCompleted(selectedLevel)) {
             g.setFont(new Font("Segoe UI", Font.BOLD, 36));
             g.setColor(new Color(80, 255, 220));
             drawCenteredString(g, "✓", WID/2 + 60, boxY + boxH/2 + 10, new Color(80,255,220));
         }
-
         g2d.setColor(new Color(0,255,255,180));
         int arrowY = boxY + boxH/2 - 15;
         int[] leftX = {WID/2-120, WID/2-100, WID/2-100};
         int[] leftY = {arrowY+15, arrowY, arrowY+30};
         g2d.fillPolygon(leftX, leftY, 3);
-
         int[] rightX = {WID/2+120, WID/2+100, WID/2+100};
         int[] rightY = {arrowY+15, arrowY, arrowY+30};
         g2d.fillPolygon(rightX, rightY, 3);
-
         g.setFont(new Font("Segoe UI", Font.PLAIN, 18));
         drawCenteredString(g, "Completed: " + game.getCompletedLevelCount() + "/" + game.getLevelCount(), WID/2, 420, new Color(180,255,255));
         drawCenteredString(g, "Use ←/→ to change level, ENTER to start, ESC to go back", WID/2, 480, new Color(180,220,255));
@@ -263,5 +228,36 @@ public class MainMenu {
         }
         g2d.setColor(Color.WHITE);
         g2d.drawString(text, textX, y);
+    }
+
+    private void drawLogo(Graphics2D g2d, int cx, int cy) {
+        for (int r = 60; r >= 40; r -= 5) {
+            g2d.setColor(new Color(0, 255, 255, 18));
+            g2d.fillOval(cx - r, cy - r, r * 2, r * 2);
+        }
+        g2d.setColor(new Color(180, 220, 255));
+        g2d.setStroke(new BasicStroke(7f));
+        g2d.drawOval(cx - 38, cy - 38, 76, 76);
+        g2d.setColor(new Color(60, 80, 120));
+        g2d.fillOval(cx - 32, cy - 32, 64, 64);
+        g2d.setColor(new Color(200, 240, 255));
+        g2d.setStroke(new BasicStroke(5f));
+        for (int i = 0; i < 4; i++) {
+            double angle = Math.PI / 4 + i * Math.PI / 2;
+            int x1 = cx + (int) (Math.cos(angle) * 0);
+            int y1 = cy + (int) (Math.sin(angle) * 0);
+            int x2 = cx + (int) (Math.cos(angle) * 24);
+            int y2 = cy + (int) (Math.sin(angle) * 24);
+            g2d.drawLine(x1, y1, x2, y2);
+        }
+        g2d.setColor(new Color(255, 255, 255, 220));
+        g2d.fillOval(cx - 8, cy - 8, 16, 16);
+        g2d.setColor(new Color(120, 180, 255));
+        for (int i = 0; i < 6; i++) {
+            double angle = i * Math.PI / 3;
+            int bx = cx + (int) (Math.cos(angle) * 32);
+            int by = cy + (int) (Math.sin(angle) * 32);
+            g2d.fillOval(bx - 4, by - 4, 8, 8);
+        }
     }
 }

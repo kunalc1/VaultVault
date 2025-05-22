@@ -19,23 +19,14 @@ public class Player {
     }
 
     public void update() {
-        // Apply horizontal movement
         velocityX = 0;
         if (movingLeft) velocityX -= moveSpeed;
         if (movingRight) velocityX += moveSpeed;
-
-        // Gravity is now applied in Level's collision logic, but ensure it's always applied if not on ground
-        // applyGravity();
-
-        // Cap falling speed for better control
         if (velocityY > 20) velocityY = 20;
-
-        // Apply velocity
         x += velocityX;
         y += velocityY;
     }
 
-    // New method to apply gravity separately
     public void applyGravity() {
         if (!onGround) {
             velocityY += gravity;
@@ -54,7 +45,6 @@ public class Player {
         g.fillRect((int)x, (int)y, width, height);
     }
 
-    // Collision bounds
     public Rectangle getBounds() {
         return new Rectangle((int)x, (int)y, width, height);
     }
@@ -75,7 +65,6 @@ public class Player {
         return new Rectangle((int)x + width - 5, (int)y + 2, 5, height - 4);
     }
 
-    // Getters and setters
     public float getX() { return x; }
     public void setX(float x) { this.x = x; }
     public float getY() { return y; }
@@ -87,12 +76,8 @@ public class Player {
     public void setOnGround(boolean onGround) { this.onGround = onGround; }
     public void setMovingLeft(boolean movingLeft) { this.movingLeft = movingLeft; }
     public void setMovingRight(boolean movingRight) { this.movingRight = movingRight; }
-
-    // Add getter and setter for velocityX
     public float getVelocityX() { return velocityX; }
     public void setVelocityX(float velocityX) { this.velocityX = velocityX; }
-
-    // Add these getters for movement direction
     public boolean getMovingLeft() { return movingLeft; }
     public boolean getMovingRight() { return movingRight; }
 }

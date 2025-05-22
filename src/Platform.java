@@ -13,7 +13,6 @@ public class Platform {
     }
 
     public void update() {
-        // Default implementation does nothing
     }
 
     public void render(Graphics g) {
@@ -25,7 +24,6 @@ public class Platform {
         return new Rectangle(x, y, width, height);
     }
 
-    // Getters and setters
     public int getX() { return x; }
     public void setX(int x) { this.x = x; }
     public int getY() { return y; }

@@ -89,7 +89,6 @@ public class Hazard {
     }
 
     private void renderElectric(Graphics g) {
-        // Electric hazard: animated zigzag
         Graphics2D g2d = (Graphics2D) g;
         g2d.setStroke(new BasicStroke(3f));
         int segments = 8;
@@ -108,7 +107,6 @@ public class Hazard {
     }
 
     private void renderSaw(Graphics g) {
-        // Saw hazard: spinning blade
         Graphics2D g2d = (Graphics2D) g;
         int cx = x + width / 2;
         int cy = y + height / 2;
@@ -136,7 +134,6 @@ public class Hazard {
     }
 
     private void renderIce(Graphics g) {
-        // Ice hazard: blue/white with sparkles
         g.setColor(color);
         g.fillRect(x, y, width, height);
         g.setColor(new Color(255, 255, 255, 120));
@@ -155,19 +152,14 @@ public class Hazard {
         return type;
     }
 
-    // Add helper for slide effect (to be called from Level)
     public static void applyIceSlideEffect(Player player) {
-        // Simulate sliding: store momentum, keep sliding after releasing movement keys
-        float slideFriction = 0.97f; // Lower value = more slippery
-        // If player is pressing left/right, set velocityX as normal
+        float slideFriction = 0.97f;
         if (player.getMovingLeft()) {
-            player.setVelocityX(-5.0f); // Use a reasonable slide speed
+            player.setVelocityX(-5.0f);
         } else if (player.getMovingRight()) {
             player.setVelocityX(5.0f);
         } else {
-            // If not pressing, keep sliding and slowly reduce speed
             player.setVelocityX(player.getVelocityX() * slideFriction);
-            // Stop if very slow
             if (Math.abs(player.getVelocityX()) < 0.3f) {
                 player.setVelocityX(0);
             }

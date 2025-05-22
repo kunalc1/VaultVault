@@ -14,7 +14,6 @@ public class DisappearingPlatform extends Platform {
 
     @Override
     public void update() {
-        // Once disappeared, stay visible forever after reappearing
         if (!visible && !disappearedOnce) {
             timer++;
             if (timer >= visibilityDuration) {
@@ -23,7 +22,6 @@ public class DisappearingPlatform extends Platform {
                 disappearedOnce = true;
             }
         }
-        // If disappearedOnce is true, platform stays visible permanently
     }
 
     public void triggerDisappear() {
@@ -33,7 +31,6 @@ public class DisappearingPlatform extends Platform {
         }
     }
 
-    // Reset platform to its initial disappearing state
     public void reset() {
         visible = true;
         disappearedOnce = false;
@@ -44,7 +41,6 @@ public class DisappearingPlatform extends Platform {
     public void render(Graphics g) {
         if (visible) {
             super.render(g);
-            // No warning indicators
         }
     }
 
@@ -53,7 +49,6 @@ public class DisappearingPlatform extends Platform {
     }
 }
 
-// Platform6: disappears visually and physically (player falls through when invisible), always reappears after timer
 class Platform6 extends Platform {
     private int timer;
     private int visibilityDuration;
